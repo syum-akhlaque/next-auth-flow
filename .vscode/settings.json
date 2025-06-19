@@ -1,0 +1,14 @@
+{
+  "workbench.colorCustomizations": {
+    "terminal.background": "#1D2021",
+    "terminal.ansiYellow": "#0063B2FF",
+    "terminal.ansiBlue": "#9CC3D5FF",
+    "list.inactiveSelectionBackground": "#4b5049",
+    "list.inactiveFocusOutline": "#1dd6c7",
+    "tab.activeBorder": "#1dd6c7",
+    "tab.activeBackground": "#4b5049",
+    "activityBar.background": "#382935",
+    "titleBar.activeBackground": "#4E394A",
+    "titleBar.activeForeground": "#FBFAFB"
+  }
+}
