@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/AuthContext";
+import VerifyEmailModal from "./VerifyEmailModal";
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
@@ -29,6 +30,7 @@ const DashboardPage = () => {
         <strong>Email:</strong> {user?.email}
       </p>
       <Button onClick={logout}>Logout</Button>
+      <VerifyEmailModal />
     </div>
   );
 };
