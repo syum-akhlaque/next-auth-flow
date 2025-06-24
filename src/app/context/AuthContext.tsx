@@ -1,18 +1,37 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
+import { useRouter, usePathname } from "next/navigation";
 
 type User = {
   name: string;
   email: string;
+  isVerified?: boolean;
+};
+type ApiUserResult = {
+  first_name: string;
+  last_name: string;
+  email: string;
+  email_verified_at: string | null;
 };
 
 type AuthContextType = {
   user: User | null;
+  setUser: Dispatch<SetStateAction<User | null>>;
   accessToken: string | null;
   refreshToken: string | null;
-  login: (tokenData: { access_token: string; refresh_token: string }) => void;
+  login: (tokenData: {
+    access_token: string;
+    refresh_token: string;
+    result: ApiUserResult;
+  }) => void;
   logout: () => void;
 };
 
@@ -23,16 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    const storedAccessToken = localStorage.getItem("access_token");
-    const storedRefreshToken = localStorage.getItem("refresh_token");
-    if (storedAccessToken && storedRefreshToken) {
-      setAccessToken(storedAccessToken);
-      setRefreshToken(storedRefreshToken);
-      fetchUser(storedAccessToken);
-    }
-  }, []);
+  const pathname = usePathname();
 
   const fetchUser = async (token: string) => {
     try {
@@ -48,25 +58,41 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
 
       const data = await res.json();
-      setUser(data);
+      const { first_name, last_name, email, email_verified_at } = data.result;
+      const user = {
+        name: `${first_name} ${last_name}`,
+        email: email,
+        isVerified: email_verified_at ? true : false,
+      };
+      setUser(user);
     } catch (error) {
       console.error("Fetch user failed:", error);
-      // logout();
+      if (pathname === "/dashboard") {
+        logout();
+      }
     }
   };
 
   const login = ({
     access_token,
     refresh_token,
+    result,
   }: {
     access_token: string;
     refresh_token: string;
+    result: ApiUserResult;
   }) => {
+    // Store tokens
     setAccessToken(access_token);
     setRefreshToken(refresh_token);
     localStorage.setItem("access_token", access_token);
     localStorage.setItem("refresh_token", refresh_token);
-    fetchUser(access_token);
+    const user = {
+      name: `${result.first_name} ${result.last_name}`,
+      email: result.email,
+      isVerified: result.email_verified_at ? true : false,
+    };
+    setUser(user);
     router.push("/dashboard");
   };
 
@@ -79,9 +105,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     router.push("/login");
   };
 
+  useEffect(() => {
+    const storedAccessToken = localStorage.getItem("access_token");
+    const storedRefreshToken = localStorage.getItem("refresh_token");
+    if (storedAccessToken && storedRefreshToken) {
+      setAccessToken(storedAccessToken);
+      setRefreshToken(storedRefreshToken);
+      fetchUser(storedAccessToken);
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, refreshToken, login, logout }}
+      value={{
+        user,
+        setUser,
+        accessToken,
+        refreshToken,
+        login,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
