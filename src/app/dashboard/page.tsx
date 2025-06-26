@@ -21,15 +21,17 @@ const DashboardPage = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto mt-20 p-6 border rounded-xl shadow-sm">
-      <h1 className="text-2xl font-semibold mb-4">Dashboard</h1>
+    <div className="max-w-md mx-auto px-6 -mt-md-20">
+      <h1 className="text-2xl font-semibold mb-4">Welcome to Dashboard</h1>
       <p className="mb-2">
         <strong>Name:</strong> {user?.name}
       </p>
       <p className="mb-4">
         <strong>Email:</strong> {user?.email}
       </p>
-      <Button onClick={logout}>Logout</Button>
+      <Button onClick={logout} className="bg-purple-600 hover:bg-purple-700">
+        Logout
+      </Button>
       <VerifyEmailModal />
     </div>
   );

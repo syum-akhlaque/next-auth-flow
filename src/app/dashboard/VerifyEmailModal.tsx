@@ -84,7 +84,11 @@ const VerifyEmailModal = () => {
             placeholder="Enter OTP"
           />
 
-          <Button className="w-full" onClick={handleVerifyOtp} disabled={!otp}>
+          <Button
+            className="w-full bg-purple-600 hover:bg-purple-700"
+            onClick={handleVerifyOtp}
+            disabled={!otp}
+          >
             Verify Email
           </Button>
 
