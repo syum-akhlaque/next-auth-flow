@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/AuthContext";
@@ -20,7 +20,7 @@ type LoginFormValues = {
 };
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -33,31 +33,16 @@ const LoginPage = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     setError(null);
-    try {
-      const res = await fetch("https://api.vidinfra.com/v1/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData?.message || "Login failed");
-      }
-
-      const tokens = await res.json();
-      login(tokens);
-      router.push("/dashboard");
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Unexpected login error");
-      }
-    }
+    const loginInfo = await login(data.email, data.password);
+    if (loginInfo) router.push("/dashboard");
+    else setError("Invalid credentials");
   };
+
+  useEffect(() => {
+    if (user && user.name) {
+      router.push("/dashboard");
+    }
+  }, [user, router]);
 
   return (
     <div className="flex flex-col justify-center flex-grow">

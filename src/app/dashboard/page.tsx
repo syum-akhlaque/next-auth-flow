@@ -4,16 +4,18 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/AuthContext";
 import VerifyEmailModal from "./VerifyEmailModal";
+import { useRouter } from "next/navigation";
 
 const DashboardPage = () => {
   const { user, logout } = useAuth();
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     if (user && user.name && user.email) {
       console.log("inside dashboard page");
       setLoading(false);
-    }
+    } else router.push("/login");
   }, [user]);
 
   if (loading) {

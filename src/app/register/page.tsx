@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 
-type RegisterFormValues = {
+type RegisterFormType = {
   first_name: string;
   last_name: string;
   email: string;
@@ -17,47 +17,24 @@ type RegisterFormValues = {
 };
 
 const RegisterPage = () => {
-  const { login } = useAuth();
+  const { user, registerUser } = useAuth();
   const router = useRouter();
-
   const [error, setError] = useState<string | null>(null);
-
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<RegisterFormValues>();
+  } = useForm<RegisterFormType>();
+  if (user && user.name) router.push("/dashboard");
 
-  const onSubmit = async (data: RegisterFormValues) => {
+  const onSubmit = async (data: RegisterFormType) => {
     setError(null);
-
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirm_password, ...apiPayload } = data;
-
-    try {
-      const res = await fetch("https://api.vidinfra.com/v1/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(apiPayload),
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData?.message || "Registration failed");
-      }
-
-      const tokens = await res.json();
-      login(tokens); // auto-login
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred.");
-      }
-    }
+    const { confirm_password, ...regData } = data;
+    const registerInfo = await registerUser(regData);
+    if (registerInfo) router.push("/dashboard");
+    else setError("Invalid credentials");
   };
 
   return (

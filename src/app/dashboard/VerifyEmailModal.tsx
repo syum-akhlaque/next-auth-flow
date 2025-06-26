@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/AuthContext";
 
 const VerifyEmailModal = () => {
-  const { user, accessToken, setUser } = useAuth();
+  const { user, verifyOtp } = useAuth();
   const [open, setOpen] = useState(false);
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
@@ -28,41 +28,11 @@ const VerifyEmailModal = () => {
   const handleVerifyOtp = async () => {
     setError("");
     setSuccess("");
-
-    try {
-      const res = await fetch(
-        `https://api.vidinfra.com/v1/auth/verify/${user?.email}/${otp}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-
-      const contentType = res.headers.get("Content-Type");
-
-      if (!res.ok) {
-        if (contentType && contentType.includes("application/json")) {
-          const err = await res.json();
-          throw new Error(err.message || "OTP verification failed");
-        } else {
-          const text = await res.text();
-          throw new Error(text || "Unexpected error");
-        }
-      }
-      setSuccess("🎉 Email verified successfully!");
-      if (user) {
-        setUser({
-          ...user,
-          isVerified: true, // or get from API if returned
-        });
-      }
+    const res = await verifyOtp(otp);
+    if (res) {
+      setSuccess("Email verified successfully!");
       setOpen(false);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.message || "Something went wrong");
-    }
+    } else setError("OTP verification failed");
   };
 
   return (
