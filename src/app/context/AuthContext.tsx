@@ -39,6 +39,24 @@ export type AuthContextType = {
   loading: boolean;
 };
 
+const setRefreshCookie = (token: string) => {
+  // store for 7 days
+  document.cookie = `refresh_token=${token}; path=/; max-age=${
+    60 * 60 * 24 * 7
+  }; secure; samesite=strict`;
+};
+
+const getRefreshCookie = (): string | null => {
+  const cookies = document.cookie.split("; ");
+  const token = cookies.find((c) => c.startsWith("refresh_token="));
+  return token ? token.split("=")[1] : null;
+};
+
+const clearRefreshCookie = () => {
+  document.cookie =
+    "refresh_token=; path=/; max-age=0; secure; samesite=strict";
+};
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -49,7 +67,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const storeAuthTokens = (access: string, refresh: string) => {
     localStorage.setItem("access_token", access);
-    localStorage.setItem("refresh_token", refresh);
+    setRefreshCookie(refresh);
     setAccessToken(access);
   };
 
@@ -115,7 +133,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAccessToken(null);
     setUser(null);
     localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
+    clearRefreshCookie();
     router.push("/login");
   };
 
@@ -137,7 +155,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const storedAccessToken = localStorage.getItem("access_token");
-    const storedRefreshToken = localStorage.getItem("refresh_token");
+    const storedRefreshToken = getRefreshCookie();
     setAccessToken(storedAccessToken);
 
     if (storedAccessToken && storedRefreshToken) {
