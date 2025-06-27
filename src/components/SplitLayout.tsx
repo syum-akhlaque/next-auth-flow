@@ -27,12 +27,12 @@ export default function SplitLayout({
       </div>
 
       {/* Right side - Image */}
-      <div className="hidden md:block w-1/2 relative">
+      <div className="hidden md:block w-1/2 relative bg-gray-50 ">
         <Image
           src="/bg-img.png"
           alt="Auth Side Image"
           fill
-          className="object-cover rounded-l-2xl"
+          className="object-cover p-6 rounded-[30px]"
           priority
         />
       </div>

@@ -1,6 +1,6 @@
 import { RegisterType } from "../context/AuthContext";
 
-const API = "https://api.vidinfra.com/v1";
+const API = process.env.NEXT_PUBLIC_API_URL || "https://api.vidinfra.com/v1";
 
 export const loginUser = async (email: string, password: string) => {
   const res = await fetch(`${API}/auth/login`, {

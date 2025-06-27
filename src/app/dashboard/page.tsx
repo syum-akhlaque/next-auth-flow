@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../context/AuthContext";
 import VerifyEmailModal from "./VerifyEmailModal";
