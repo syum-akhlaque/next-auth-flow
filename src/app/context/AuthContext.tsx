@@ -32,12 +32,11 @@ export type updateUserType = {
 
 export type AuthContextType = {
   user: User | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   registerUser: (payload: RegisterType) => Promise<boolean>;
   login: (email: string, password: string) => Promise<boolean>;
   verifyOtp: (opt: string) => Promise<boolean>;
   logout: () => void;
+  loading: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -46,7 +45,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const storeAuthTokens = (access: string, refresh: string) => {
+    localStorage.setItem("access_token", access);
+    localStorage.setItem("refresh_token", refresh);
+    setAccessToken(access);
+  };
 
   const handleUpdateUser = ({
     first_name,
@@ -68,10 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (!profile) {
       const refreshed = await refreshTokenApi(refresh_token);
       if (refreshed) {
-        localStorage.setItem("access_token", refreshed.access_token);
-        localStorage.setItem("refresh_token", refreshed.refresh_token);
-        setAccessToken(refreshed.access_token);
-        setRefreshToken(refreshed.refresh_token);
+        storeAuthTokens(refreshed.access_token, refreshed.refresh_token);
         profile = await getProfile(refreshed.access_token);
       }
     }
@@ -102,10 +104,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const login = async (email: string, password: string) => {
     const res = await loginUser(email, password);
     if (res) {
-      localStorage.setItem("access_token", res.access_token);
-      localStorage.setItem("refresh_token", res.refresh_token);
-      setAccessToken(res.access_token);
-      setRefreshToken(res.refresh_token);
+      storeAuthTokens(res.access_token, res.refresh_token);
       handleUpdateUser(res.result);
       return true;
     }
@@ -114,7 +113,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = () => {
     setAccessToken(null);
-    setRefreshToken(null);
     setUser(null);
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -141,26 +139,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const storedAccessToken = localStorage.getItem("access_token");
     const storedRefreshToken = localStorage.getItem("refresh_token");
     setAccessToken(storedAccessToken);
-    setRefreshToken(storedRefreshToken);
-    console.log("hits");
 
     if (storedAccessToken && storedRefreshToken) {
-      console.log("hits");
-
-      checkAuth(storedAccessToken, storedRefreshToken);
-    } else logout();
+      checkAuth(storedAccessToken, storedRefreshToken).then(() => {
+        setLoading(false);
+      });
+    } else {
+      logout();
+      setLoading(false);
+    }
   }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        accessToken,
-        refreshToken,
         login,
         registerUser,
         logout,
         verifyOtp,
+        loading,
       }}
     >
       {children}
